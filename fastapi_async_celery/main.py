@@ -1,5 +1,3 @@
-from typing import Union
-
 from fastapi import FastAPI
 
 from .s3_char_count.router import router as s3_char_count_router

@@ -3,8 +3,22 @@ version: '3'
 services:
   fastapi:
     image: fastapi_async_celery
+    depends_on:
+      - postgres
     build:
       context: .
       dockerfile: Dockerfile
+    command: ./start
+    env_file:
+      - ./.envs/.fastapi
     ports:
       - "8080:8080"
+  
+  postgres:
+    image: postgres:14.5
+    restart: unless-stopped
+    container_name: fastapi_async_celery_postgres
+    env_file:
+      - ./.envs/.postgres
+    ports:
+      - "5432:5432"

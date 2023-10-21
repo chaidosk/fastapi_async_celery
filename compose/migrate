@@ -1,0 +1,3 @@
+#!/bin/sh
+# Run migrations
+alembic  -c fastapi_async_celery/config/alembic/alembic.ini upgrade head

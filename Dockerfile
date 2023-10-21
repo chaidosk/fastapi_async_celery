@@ -11,11 +11,13 @@ ENV PYTHONFAULTHANDLER=1 \
 RUN pip install "poetry==$POETRY_VERSION"
 
 WORKDIR /app
+COPY compose/migrate /app/
+RUN chmod +x migrate
+COPY compose/start /app/
+RUN chmod +x start
 COPY poetry.lock pyproject.toml /app/
 
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-dev --no-interaction --no-ansi
 
 COPY fastapi_async_celery/ /app/fastapi_async_celery/
-
-CMD ["uvicorn", "fastapi_async_celery.main:app", "--host", "0.0.0.0", "--port", "8080"]

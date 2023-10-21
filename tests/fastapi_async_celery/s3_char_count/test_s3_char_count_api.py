@@ -24,3 +24,19 @@ class TestS3CharCountApi:
             "status": {"status": BatchStatus.REGISTERED.value},
             "id": mock.ANY,
         }
+
+    @pytest.mark.anyio
+    async def test_create_and_retrieve_batch(self, async_client: AsyncClient):
+        s3_path = "s3://bucket/key"
+        response = await async_client.post(
+            url="v1/s3_char_count/batch",
+            json=BatchIn(s3_path=s3_path).model_dump(),
+        )
+        batch_id = response.json()["id"]
+        response = await async_client.get(url=f"v1/s3_char_count/batch/{batch_id}")
+        assert response.status_code == 200
+        assert response.json() == {
+            "s3_path": s3_path,
+            "status": {"status": BatchStatus.REGISTERED.value},
+            "id": mock.ANY,
+        }

@@ -1,0 +1,4 @@
+# PostgreSQL
+# ------------------------------------------------------------------------------
+POSTGRES_DB = fastapi_async_celery
+POSTGRES_PASSWORD = pass

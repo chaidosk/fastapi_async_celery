@@ -1,0 +1,3 @@
+#!/bin/sh
+./migrate
+uvicorn fastapi_async_celery.main:app --host 0.0.0.0 --port 8080 
