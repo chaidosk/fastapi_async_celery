@@ -5,6 +5,7 @@ services:
     image: fastapi_async_celery
     depends_on:
       - postgres
+      - localstack
     build:
       context: .
       dockerfile: Dockerfile
@@ -22,3 +23,21 @@ services:
       - ./.envs/.postgres
     ports:
       - "5432:5432"
+
+  localstack:
+    container_name: fastapi_async_celery_localstack
+    image: localstack/localstack
+    environment:
+      - SERVICES=sqs,s3,cloudformation
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+      - HOST_TMP_FOLDER=/tmp/localstack
+      - DISABLE_CORS_CHECKS=1
+      - AWS_DEFAULT_REGION=us-east-1
+      - HOSTNAME=localhost
+      - HOSTNAME_EXTERNAL=localstack
+    ports:
+      - "4566:4566"
+    volumes:
+      - "./localstack/cloud-formation/localstack-cf.yml:/tmp/localstack/templates/localstack-cf.yml:ro"
+      - "./localstack/scripts:/docker-entrypoint-initaws.d/"
