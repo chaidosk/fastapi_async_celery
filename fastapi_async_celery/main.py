@@ -2,7 +2,11 @@ from typing import Union
 
 from fastapi import FastAPI
 
+from .s3_char_count.router import router as s3_char_count_router
+
 app = FastAPI()
+
+app.include_router(s3_char_count_router, prefix="/v1")
 
 
 @app.get("/")
