@@ -10,3 +10,19 @@ You can run all tests by
 ```sh
 make test
 ```
+
+## Run app in docker
+
+You can build the docker image with
+
+```sh
+make build
+```
+
+And you can start it with
+
+```sh
+make up
+```
+
+After the application is up you can see the API specs under [http://localhost:8080/docs](http://localhost:8080/docs)
