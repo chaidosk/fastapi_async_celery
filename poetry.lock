@@ -1252,6 +1252,19 @@ docker = ">=4.0.0"
 wrapt = "*"
 
 [[package]]
+name = "testcontainers-localstack"
+version = "0.0.1rc1"
+description = "LocalStack component of testcontainers-python."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "testcontainers_localstack-0.0.1rc1-py3-none-any.whl", hash = "sha256:c3b2d3e97511360a7d0a4115338415a9c25e4463877d4d155aad848e4227e755"},
+]
+
+[package.dependencies]
+testcontainers-core = "*"
+
+[[package]]
 name = "testcontainers-postgres"
 version = "0.0.1rc1"
 description = "PostgreSQL component of testcontainers-python."
@@ -1448,4 +1461,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "f261fb613e472285a74219104c4b19922824d3c3bf51eb0cdbceddf2af6f8a2d"
+content-hash = "f10ff504a8408d1b88597f1f2d581a08c2aec2a070de10482ea251f2a771f292"
