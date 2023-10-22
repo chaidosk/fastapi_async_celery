@@ -4,22 +4,16 @@ import pytest
 from io import BytesIO
 from fastapi_async_celery.s3_char_count.batch_service import BatchService
 from fastapi_async_celery.s3_char_count.schema import Batch, BatchInProgress
+from test_s3_helper import create_bucket
 
 
 class TestHandleBatch:
-    async def create_bucket(self, session, endpoint_url, bucket_name, number_of_files):
-        async with session.client("s3", endpoint_url=endpoint_url) as s3:
-            resp = await s3.create_bucket(Bucket=bucket_name)
-            for i in range(number_of_files):
-                with BytesIO(b"A Text") as f:
-                    await s3.upload_fileobj(f, bucket_name, f"file_{i}")
-
     @pytest.mark.anyio
     async def test_handle_batch(
         self, localstack_session, localstack_enpoint_url, clean_db
     ):
         s3_path = f"s3://test-handle-batch"
-        await self.create_bucket(
+        await create_bucket(
             session=localstack_session,
             endpoint_url=localstack_enpoint_url,
             bucket_name="test-handle-batch",

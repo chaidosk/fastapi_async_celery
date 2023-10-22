@@ -2,11 +2,9 @@ from unittest import mock
 from httpx import AsyncClient
 import pytest
 from uuid import UUID
-
+from test_s3_helper import create_bucket
 from fastapi_async_celery.s3_char_count.schema import (
-    Batch,
     BatchIn,
-    BatchRegistered,
     BatchStatus,
 )
 
@@ -14,9 +12,16 @@ from fastapi_async_celery.s3_char_count.schema import (
 class TestS3CharCountApi:
     @pytest.mark.anyio
     async def test_create_batch(
-        self, async_client_with_celery: AsyncClient, wait_for_task
+        self,
+        async_client_with_celery: AsyncClient,
+        wait_for_task,
+        localstack_session,
+        localstack_enpoint_url,
     ):
-        s3_path = "s3://bucket/key"
+        s3_path = "s3://test-create-batch"
+        await create_bucket(
+            localstack_session, localstack_enpoint_url, "test-create-batch", 1
+        )
         response = await async_client_with_celery.post(
             url="v1/s3_char_count/batch",
             json=BatchIn(s3_path=s3_path).model_dump(),

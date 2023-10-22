@@ -5,7 +5,13 @@ import httpx
 import pytest
 import aioboto3
 from sqlalchemy import make_url
-from fastapi_async_celery.config.depends import get_celery_app, get_db_url, get_db
+from fastapi_async_celery.config.depends import (
+    get_aioboto3_session,
+    get_aws_enpoint_url,
+    get_celery_app,
+    get_db_url,
+    get_db,
+)
 from fastapi_async_celery.create_celery_app import create_celery_app
 from fastapi_async_celery.main import app
 from fastapi_async_celery.config.db_model_base import Base
@@ -143,25 +149,43 @@ async def reset_db(db_engine):
 
 
 @pytest.fixture(scope="session")
-def fac_celery_app(db_dsn, celery_session_app, celery_session_worker):
-    drs_celery_app = create_celery_app(
+def fac_celery_app(
+    db_dsn,
+    celery_session_app,
+    celery_session_worker,
+    localstack_session,
+    localstack_enpoint_url,
+):
+    fac_celery_app = create_celery_app(
         celery_app=celery_session_app,
         db_url=db_dsn,
+        aioboto3_session=localstack_session,
+        aws_endpoint_url=localstack_enpoint_url,
     )
     celery_session_worker.reload()
-    return drs_celery_app
+    return fac_celery_app
 
 
 @pytest.fixture(scope="function")
-async def app_with_test_db_and_celery(db_dsn, fac_celery_app, reset_db):
+async def app_with_test_db_and_celery(
+    db_dsn, fac_celery_app, localstack_session, localstack_enpoint_url, reset_db
+):
     def override_get_db_url():
         return db_dsn
 
     def override_get_celery_app():
         return fac_celery_app
 
+    def override_get_aioboto3_session():
+        return localstack_session
+
+    def override_get_aws_enpoint_url():
+        return localstack_enpoint_url
+
     app.dependency_overrides[get_db_url] = override_get_db_url
     app.dependency_overrides[get_celery_app] = override_get_celery_app
+    app.dependency_overrides[get_aioboto3_session] = override_get_aioboto3_session
+    app.dependency_overrides[get_aws_enpoint_url] = override_get_aws_enpoint_url
     yield app
 
     app.dependency_overrides.clear()
