@@ -1,6 +1,6 @@
 from celery import Celery
 from fastapi_async_celery.config import settings
-from fastapi_async_celery.tasks import register_handle_batch
+from fastapi_async_celery.s3_char_count.batch_service import BatchService
 
 
 def create_celery_app(
@@ -12,5 +12,6 @@ def create_celery_app(
 
         celery_app.config_from_object(settings.CELERY_CONFIG)
 
-    register_handle_batch(app=celery_app, db_url=db_url)
+    batch_service = BatchService(celery_app=celery_app)
+    batch_service.register_tasks(db_url=db_url)
     return celery_app
