@@ -1,6 +1,6 @@
 from logging import getLogger
 from threading import current_thread, local
-from typing import AsyncContextManager, Type
+from typing import AsyncContextManager
 from fastapi import Depends
 from fastapi_async_celery.config import settings
 from sqlalchemy.ext.asyncio import (
@@ -62,3 +62,9 @@ async def get_db(
     _async_db_context_manager = async_db_context_manager(db_url)
     async with _async_db_context_manager() as db:
         yield db
+
+
+def get_celery_app():
+    from fastapi_async_celery.create_celery_app import create_celery_app
+
+    return create_celery_app()

@@ -1,0 +1,2 @@
+#!/bin/sh
+celery -A fastapi_async_celery.celery_app worker -l INFO

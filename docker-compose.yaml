@@ -3,6 +3,7 @@ version: '3'
 services:
   fastapi:
     image: fastapi_async_celery
+    restart: unless-stopped
     depends_on:
       - postgres
       - localstack
@@ -14,6 +15,19 @@ services:
       - ./.envs/.fastapi
     ports:
       - "8080:8080"
+  
+  worker:
+    image: fastapi_async_celery
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - localstack
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ./start-worker
+    env_file:
+      - ./.envs/.fastapi
   
   postgres:
     image: postgres:14.5

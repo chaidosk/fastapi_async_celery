@@ -1,7 +1,8 @@
 from uuid import UUID, uuid4
+from celery import Celery
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
-from fastapi_async_celery.config.depends import get_db
+from fastapi_async_celery.config.depends import get_celery_app, get_db
 
 from fastapi_async_celery.s3_char_count.schema import (
     Batch,
@@ -20,13 +21,23 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
     response_model=Batch,
 )
-async def create_batch(batch_in: BatchIn, db: AsyncSession = Depends(get_db)) -> Batch:
+async def create_batch(
+    batch_in: BatchIn,
+    db: AsyncSession = Depends(get_db),
+    celery_app: Celery = Depends(get_celery_app),
+) -> Batch:
     batch_id = uuid4()
     db_batch = DBBatch(
         id=batch_id, s3_path=batch_in.s3_path, status=BatchStatus.REGISTERED
     )
     db.add(db_batch)
     await db.commit()
+    celery_app.send_task(
+        "handle_batch",
+        kwargs={
+            "id": batch_id,
+        },
+    )
     return Batch(id=batch_id, s3_path=batch_in.s3_path, status=BatchRegistered())
 
 
