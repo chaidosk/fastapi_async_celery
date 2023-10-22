@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Enum, String
+from sqlalchemy import Column, Enum, String, Integer
 
 from sqlalchemy.dialects.postgresql import UUID
 from fastapi_async_celery.config.db_model_base import Base
@@ -10,3 +10,5 @@ class Batch(Base):
     id = Column(UUID, primary_key=True, index=True)
     s3_path = Column(String)
     status = Column(Enum(BatchStatus))
+    total_files = Column(Integer, nullable=True)
+    processed_files = Column(Integer, nullable=True)

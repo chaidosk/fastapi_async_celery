@@ -3,8 +3,9 @@ import asyncpg
 from celery import Celery
 import httpx
 import pytest
+import aioboto3
 from sqlalchemy import make_url
-from fastapi_async_celery.config.depends import get_celery_app, get_db_url
+from fastapi_async_celery.config.depends import get_celery_app, get_db_url, get_db
 from fastapi_async_celery.create_celery_app import create_celery_app
 from fastapi_async_celery.main import app
 from fastapi_async_celery.config.db_model_base import Base
@@ -23,7 +24,7 @@ def anyio_backend() -> str:
 
 
 @pytest.fixture(scope="session")
-def localstack_sqs():
+def localstack_host_port():
     with LocalStackContainer(image="localstack/localstack") as localstack:
         localstack.with_services("sqs")
         host = localstack.get_container_host_ip()
@@ -32,7 +33,21 @@ def localstack_sqs():
 
 
 @pytest.fixture(scope="session")
-def celery_config(localstack_sqs, executed_celery_tasks):
+def localstack_session(localstack_host_port):
+    return aioboto3.Session(
+        aws_access_key_id="fake",
+        aws_secret_access_key="fake",
+        region_name="us-east-1",
+    )
+
+
+@pytest.fixture(scope="session")
+def localstack_enpoint_url(localstack_host_port):
+    return f"http://{localstack_host_port}"
+
+
+@pytest.fixture(scope="session")
+def celery_config(localstack_host_port, executed_celery_tasks):
     @task_postrun.connect(weak=False)
     def task_postrun_handler(task_id, task, retval, state, *args, **kwargs):
         executed_celery_tasks.append(
@@ -44,7 +59,7 @@ def celery_config(localstack_sqs, executed_celery_tasks):
     if "CELERY_BROKER_URL" in os.environ:
         os.environ.pop("CELERY_BROKER_URL")
     return {
-        "broker_url": f"sqs://fake:fake@{localstack_sqs}/0",  # pragma: allowlist secret
+        "broker_url": f"sqs://fake:fake@{localstack_host_port}/0",  # pragma: allowlist secret
         "broker_transport_options": {"wait_time_seconds": 2},
     }
 
@@ -150,6 +165,12 @@ async def app_with_test_db_and_celery(db_dsn, fac_celery_app, reset_db):
     yield app
 
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+async def clean_db(db_dsn, reset_db):
+    async for db in get_db(db_url=db_dsn):
+        yield db
 
 
 @pytest.fixture(scope="function")
