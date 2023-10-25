@@ -32,7 +32,7 @@ def anyio_backend() -> str:
 @pytest.fixture(scope="session")
 def localstack_host_port():
     with LocalStackContainer(image="localstack/localstack") as localstack:
-        localstack.with_services("sqs")
+        localstack.with_services("sqs,s3")
         host = localstack.get_container_host_ip()
         port = localstack.get_exposed_port(LocalStackContainer.EDGE_PORT)
         yield f"{host}:{port}"

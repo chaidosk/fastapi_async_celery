@@ -17,8 +17,12 @@ from sqlalchemy import select, update
 from aioboto3 import Session
 import logging
 from asgiref.sync import async_to_sync
+import os
 
 logger = logging.getLogger(__name__)
+
+MIN_SLEEP_DURATION = int(os.getenv("MIN_SLEEP_DURATION", "1"))
+MAX_SLEEP_DURATION = int(os.getenv("MAX_SLEEP_DURATION", "1"))
 
 
 class BatchService:
@@ -71,7 +75,7 @@ class BatchService:
         logger.info(f"handle_batch for {id} done!")
 
     async def handle_file(self, id, key, db):
-        sleep_duration = random.randint(5, 20)
+        sleep_duration = random.randint(MIN_SLEEP_DURATION, MAX_SLEEP_DURATION)
         logger.info(f"handle_file for {id} - {key}. Sleeping for {sleep_duration}")
         batch = await self.get_batch(batch_id=id, db=db)
         # Download file, count characters and do other things!
